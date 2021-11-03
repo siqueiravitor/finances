@@ -15,7 +15,7 @@ export default function Finance() {
     const windowWidth = Dimensions.get('window').width;
     const [type, setType] = useState('')
     const [list, setList] = useState([]);
-    const [saldo, setSaldo] = useState(0);
+    const [saldo, setSaldo] = useState('');
     const [saldoDia, setSaldoDia] = useState(0);
     const [saldoProfit, setSaldoProfit] = useState(0);
     const [saldoExpense, setSaldoExpense] = useState(0);
@@ -32,7 +32,8 @@ export default function Finance() {
         setHistorico(list)
     }, [list])
 
-    useEffect(() => {
+
+    useEffect(async () => {
         let calc = parseFloat(saldoProfit) - parseFloat(saldoExpense);
         setSaldoDia(calc)
     }, [saldoProfit, saldoExpense])
@@ -166,9 +167,6 @@ export default function Finance() {
 
     return (
         <View style={{ flex: 1, backgroundColor: "#000" }}>
-            {/* <Text>Histórico de finanças</Text>
-            <Text>{user && user.nome}</Text> */}
-
             <View style={styles.center}>
                 <View style={{
                     flexDirection: 'row', justifyContent: 'space-around', width: windowWidth - 20,
