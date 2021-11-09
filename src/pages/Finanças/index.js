@@ -22,7 +22,6 @@ export default function Finance() {
     const [saldoExpense, setSaldoExpense] = useState(0);
     const [historico, setHistorico] = useState([])
     const [loading, setLoading] = useState(false);
-
     const [data, setData] = useState({})
     const [visible, setVisible] = useState(false);
     const [visibleErro, setVisibleErro] = useState(false);
@@ -38,7 +37,6 @@ export default function Finance() {
     useEffect(() => {
         setHistorico(list)
     }, [list])
-
 
     useEffect(() => {
         let calc = parseFloat(saldoProfit) - parseFloat(saldoExpense);
@@ -66,7 +64,7 @@ export default function Finance() {
                         childItem.forEach((item) => {
                             let list = {
                                 key: item.val().key,
-                                tipo: item.val().tipo,
+                                tipo: FirstLetterUpperCase(item.val().tipo),
                                 categoria: item.val().categoria,
                                 valor: item.val().valor,
                                 description: item.val().description,
@@ -74,6 +72,7 @@ export default function Finance() {
                             };
                             setList(oldValue => [...oldValue, list])
 
+                                console.log(item.val().tipo)
 
                             if (item.val().tipo === 'receita') {
                                 setSaldoProfit(oldValue => oldValue + item.val().valor);
@@ -164,14 +163,15 @@ export default function Finance() {
     }
 
     async function handleDeleteSuccess(data) {
+        let tipo = data.tipo.toLowerCase();
         await firebase.database().ref('historico')
-            .child(uid).child(getData(newDate)).child(data.tipo).child(data.key).remove()
+            .child(uid).child(getData(newDate)).child(tipo).child(data.key).remove()
             .then(async () => {
                 let saldoAtual = parseFloat(saldo);
-                if (data.tipo === 'receita') {
+                if (tipo === 'receita') {
                     saldoAtual -= parseFloat(data.valor)
                 }
-                if (data.tipo === 'despesa') {
+                if (tipo === 'despesa') {
                     saldoAtual += parseFloat(data.valor)
                 }
                 setSaldo(saldoAtual)
@@ -270,7 +270,7 @@ export default function Finance() {
                                     )}
                                     ListEmptyComponent={() => (
                                         <View>
-                                            <Text style={{ color :"#f1f5f7", textAlign: 'center', fontSize: 30}}>Sem dados nesta data</Text>
+                                            <Text style={{ color: "#f1f5f7", textAlign: 'center', fontSize: 30 }}>Sem dados nesta data</Text>
                                             {/* <ActivityIndicator color={'#0ff'} size={'large'} /> */}
                                         </View>
                                     )}

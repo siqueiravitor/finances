@@ -40,10 +40,6 @@ export default function Registry() {
     })
 
     async function handleSubmit() {
-        console.log(tipo)
-        console.log(desc)
-        console.log(valor)
-        console.log(categoria)
         Keyboard.dismiss();
 
         if (isNaN(parseFloat(valor)) && (tipo === null || categoria === null)) {
@@ -65,14 +61,14 @@ export default function Registry() {
     async function handleAdd() {
         let uid = usuario.uid;
         let key = await firebase.database().ref('historico').child(uid).push().key;
-        let dados;
-        dados = {
-            tipo: tipo,
-            categoria: categoria,
-            valor: parseFloat(valor),
-            description: desc,
-            date: getDataHojeSeparador('-')
-        }
+        // let dados;
+        // dados = {
+        //     tipo: tipo,
+        //     categoria: categoria,
+        //     valor: parseFloat(valor),
+        //     description: desc,
+        //     date: getDataHojeSeparador('-')
+        // }
 
         await firebase.database().ref('historico').child(uid).child(getDataHojeSeparador('-')).child(tipo).child(key).set({
             key: key,
@@ -84,33 +80,37 @@ export default function Registry() {
         })
             .then(async () => {
                 console.log('Ação salva com sucesso! ------------ DB ------')
-
-                let income
-
-                if (tipo === 'despesa') {
-                    income = parseFloat(balance) - parseFloat(valor)
-                    setBalance(income.toString())
-                } else {
-                    income = parseFloat(balance) + parseFloat(valor)
-                    setBalance(income.toString())
-                }
-
-                await firebase.database().ref('usuarios').child(usuario.uid).child('saldo').set(income.toString())
-                    .then(() => {
-                        console.log('Saldo atualizado com sucesso!!!')
-                        setVisibleSuccess(true)
-                    })
-                    .catch((e) => {
-                        setVisibleErro(true)
-                        console.log(e)
-                    })
-
-                setValor('')
-                setDesc('')
             })
             .catch((e) => {
                 console.log(e)
             })
+        let income
+
+        if (tipo === 'despesa') {
+            income = parseFloat(balance) - parseFloat(valor)
+            setBalance(income.toString())
+        } else {
+            income = parseFloat(balance) + parseFloat(valor)
+            setBalance(income.toString())
+        }
+        income = income.toString()
+
+        await firebase.database().ref('usuarios').child(usuario.uid).child('saldo').set(income)
+            .then(() => {
+                console.log('Saldo atualizado com sucesso!!!')
+                setVisibleSuccess(true)
+            })
+            .catch((e) => {
+                setVisibleErro(true)
+                console.log(e)
+            })
+
+        setValor('')
+        setDesc('')
+        // })
+        // .catch((e) => {
+        //     console.log(e)
+        // })
         Keyboard.dismiss();
     }
 
@@ -176,9 +176,9 @@ export default function Registry() {
 
                     {/* MODAIS */}
                     <Alerta setVisible={setVisibleAlert} visible={visibleAlert} >
-                        <View style={{ flex: 1, marginTop: 10 }}>
+                        <View style={{ marginTop: 10 }}>
                             <Text style={[styles.modalText, { marginBottom: 25, color: "#ff7703DD" }]}>Atenção!</Text>
-                            <View style={{ flex: 1, justifyContent: "center", marginBottom: 25 }} >
+                            <View style={{ justifyContent: "center", marginBottom: 25 }} >
                                 <Text style={styles.modalText}>{msg}</Text>
                             </View>
                             <View style={[styles.buttonArea, { marginBottom: 25 }]}>
@@ -192,14 +192,14 @@ export default function Registry() {
                         <View style={{ flex: 1 }}>
                             <Text style={styles.modalText}>{tipo && FirstLetterUpperCase(tipo)} registrada com sucesso!</Text>
                         </View>
-                        <View style={{ flexDirection: 'row', paddingBottom: 30,  }}>
+                        <View style={{ flexDirection: 'row', paddingBottom: 30, }}>
                             <View style={[styles.buttonArea, { flex: 1, alignItems: 'center' }]}>
-                                <TouchableOpacity style={[styles.buttonLight, {width: 100}]} onPress={() => navigation.navigate('Finanças')}>
+                                <TouchableOpacity style={[styles.buttonLight, { width: 100 }]} onPress={() => navigation.navigate('Finanças')}>
                                     <Text style={styles.buttonText}>Finanças</Text>
                                 </TouchableOpacity>
                             </View>
                             <View style={[styles.buttonArea, { flex: 1, alignItems: 'center' }]}>
-                                <TouchableOpacity style={[styles.buttonLight, {width: 100}]} onPress={() => setVisibleSuccess(false)}>
+                                <TouchableOpacity style={[styles.buttonLight, { width: 100 }]} onPress={() => setVisibleSuccess(false)}>
                                     <Text style={styles.buttonText}>Fechar</Text>
                                 </TouchableOpacity>
                             </View>

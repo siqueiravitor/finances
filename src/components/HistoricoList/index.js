@@ -82,7 +82,7 @@ export default function HistoricoList({ data, deleteItem, handleLeft, handleRigh
                 <View style={{ flexDirection: 'row', marginRight: 5 }}>
                     <View tipo={data.tipo}
                         style={{
-                            backgroundColor: data.tipo === 'despesa' ? '#C62C36' : '#049301',
+                            backgroundColor: data.tipo === 'Despesa' ? '#C62C36' : '#049301',
                             flexDirection: 'row',
                             paddingBottom: 3,
                             paddingTop: 3,
@@ -92,7 +92,7 @@ export default function HistoricoList({ data, deleteItem, handleLeft, handleRigh
                         }}
                     >
                         <Ionicons
-                            name={data.tipo === 'despesa' ? 'arrow-down' : 'arrow-up'}
+                            name={data.tipo === 'Despesa' ? 'arrow-down' : 'arrow-up'}
                             color='#FFF'
                             size={20}
                         />

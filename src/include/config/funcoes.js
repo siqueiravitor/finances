@@ -1,4 +1,3 @@
-
 export function moneyFormat(value){
     value = parseFloat(value);
     value = value.toFixed(2)
@@ -10,8 +9,8 @@ export function moneyFormat(value){
     return value;
 }
 
-export async function FirstLetterUpperCase(text){
-    return text.charAt(0).toUpperCase() + text.slice(1);
+export function FirstLetterUpperCase(text){
+    return (text.charAt(0).toUpperCase() + text.slice(1)).toString();
 }
 
 export function getData(data){
