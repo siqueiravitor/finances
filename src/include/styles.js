@@ -29,7 +29,7 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
         borderTopLeftRadius: 8,
         borderBottomRightRadius: 8,
-        minWidth: 260,
+        width: 260,
         paddingHorizontal: 10,
         color: "#0af"
     },
@@ -40,6 +40,16 @@ export const styles = StyleSheet.create({
         width: "80%",
         alignSelf: 'center'
     },
+    buttonLight: {
+        // backgroundColor: '#fff',
+        backgroundColor: '#0000', 
+        paddingVertical: 5, 
+        paddingHorizontal: 10,
+        borderColor: '#0af',
+        borderWidth: 1,
+        borderRadius: 4,
+        padding: 8,
+    },
     button: {
         backgroundColor: '#000',
         borderColor: '#0af',
@@ -49,7 +59,7 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
         textAlign: 'center',
-        color: '#30d',
+        color: '#0afa',
         fontSize: 18
     },
     picker: {
@@ -75,4 +85,19 @@ export const styles = StyleSheet.create({
         fontWeight: "bold", 
         color: "#ddd"
     },
+    modalText: {
+        color: "#f1f5f7",
+        textAlign: 'center',
+        fontSize: 20,
+        fontWeight: "bold"
+    },
+    simpleText: {
+        fontSize: 18,
+        color: "#0ff"
+        // borderWidth: 1, 
+        // borderRadius: 4,
+        // marginBottom: 5,
+        // paddingHorizontal: 10,
+        // paddingVertical: 5
+    }
 })

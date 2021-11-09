@@ -19,11 +19,7 @@ export default function Login() {
     const windowHeight = Dimensions.get('window').height;
 
     function handleFocus(input) {
-        if (input === 'email') {
-            console.log('email')
-        }
         if (input === 'senha') {
-            console.log('senha')
             setPasswordHide(true)
         }
     }

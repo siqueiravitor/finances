@@ -1,16 +1,21 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { View, Text, TextInput, TouchableWithoutFeedback, Keyboard, Alert, TouchableOpacity } from 'react-native'
+import { View, Text, TextInput, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native'
 import { AuthContext } from '../../contents/auth';
-import { useNavigation, useIsFocused, useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import firebase from '../../services/connFirebase';
 import { styles } from '../../include/styles'
 import { CategoryPicker, Picker } from '../../components/Picker';
-import { getDataHojeSeparador, moneyFormat } from '../../include/config/funcoes';
+import { FirstLetterUpperCase, getDataHojeSeparador, moneyFormat } from '../../include/config/funcoes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../../include/loading';
+import { Alerta, Details, Error, Success } from '../../components/Modals';
 
 export default function Registry() {
-    const navigation = useNavigation();
+    const [msg, setMsg] = useState('')
+    const [visible, setVisible] = useState(false);
+    const [visibleErro, setVisibleErro] = useState(false);
+    const [visibleAlert, setVisibleAlert] = useState(false);
+    const [visibleSuccess, setVisibleSuccess] = useState(false);
     const { user: usuario } = useContext(AuthContext);
     const [valor, setValor] = useState("");
     const [desc, setDesc] = useState("");
@@ -20,7 +25,7 @@ export default function Registry() {
     const [descColor, setDescColor] = useState("#0af");
     const [balance, setBalance] = useState(0)
     const [loading, setLoading] = useState(false)
-    const isFocused = useIsFocused();
+    const navigation = useNavigation();
 
     //GET saldo
     useFocusEffect(() => {
@@ -35,34 +40,26 @@ export default function Registry() {
     })
 
     async function handleSubmit() {
+        console.log(tipo)
+        console.log(desc)
+        console.log(valor)
+        console.log(categoria)
         Keyboard.dismiss();
 
-
         if (isNaN(parseFloat(valor)) && (tipo === null || categoria === null)) {
-            Alert.alert('Atenção', 'Valor, tipo e categoria são obrigatórios!');
+            setMsg('Campos obrigatórios: \nValor, tipo e categoria!')
+            setVisibleAlert(true)
             return;
         }
         else if (isNaN(parseFloat(valor)) || (tipo === null || categoria === null)) {
             isNaN(parseFloat(valor))
-                ? Alert.alert('Atenção', 'Digite o valor!')
-                : Alert.alert('Atenção', `Selecione ${tipo === null ? 'o tipo' : 'a categoria'}!`);
+                ? setMsg('Digite o valor!')
+                : setMsg(`Selecione ${tipo === null ? 'o tipo' : 'a categoria'}!`)
+            setVisibleAlert(true)
             return;
         }
 
-        Alert.alert(
-            'Confirmando dados',
-            `Tipo ${tipo} \nValor: R$ ${moneyFormat(valor)}  \nCategoria: ${categoria} \nDescrição: ${desc}`,
-            [
-                {
-                    text: 'Cancelar',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Registrar',
-                    onPress: () => handleAdd()
-                }
-            ]
-        )
+        setVisible(true)
     }
 
     async function handleAdd() {
@@ -101,11 +98,12 @@ export default function Registry() {
                 await firebase.database().ref('usuarios').child(usuario.uid).child('saldo').set(income.toString())
                     .then(() => {
                         console.log('Saldo atualizado com sucesso!!!')
+                        setVisibleSuccess(true)
                     })
                     .catch((e) => {
+                        setVisibleErro(true)
                         console.log(e)
                     })
-
 
                 setValor('')
                 setDesc('')
@@ -116,10 +114,6 @@ export default function Registry() {
         Keyboard.dismiss();
     }
 
-    useEffect(() => {
-        setValor('');
-        setDesc('');
-    }, [])
     if (loading) {
         return (
             <Loading />
@@ -155,6 +149,8 @@ export default function Registry() {
                                 style={[styles.input, { borderColor: descColor }]}
                                 color="#0af"
                                 placeholder="Descrição"
+                                multiline={true}
+                                maxLength={30}
                                 placeholderTextColor="#9999"
                                 onFocus={() => setDescColor("#0ff")}
                                 onBlur={() => setDescColor("#0af")}
@@ -177,6 +173,84 @@ export default function Registry() {
                             <Text style={styles.buttonText}>Registrar</Text>
                         </TouchableOpacity>
                     </View>
+
+                    {/* MODAIS */}
+                    <Alerta setVisible={setVisibleAlert} visible={visibleAlert} >
+                        <View style={{ flex: 1, marginTop: 10 }}>
+                            <Text style={[styles.modalText, { marginBottom: 25, color: "#ff7703DD" }]}>Atenção!</Text>
+                            <View style={{ flex: 1, justifyContent: "center", marginBottom: 25 }} >
+                                <Text style={styles.modalText}>{msg}</Text>
+                            </View>
+                            <View style={[styles.buttonArea, { marginBottom: 25 }]}>
+                                <TouchableOpacity style={styles.buttonLight} onPress={() => setVisibleAlert(false)}>
+                                    <Text style={styles.buttonText}>Fechar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Alerta>
+                    <Success setVisibleSuccess={setVisibleSuccess} visibleSuccess={visibleSuccess} >
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.modalText}>{tipo && FirstLetterUpperCase(tipo)} registrada com sucesso!</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', paddingBottom: 30,  }}>
+                            <View style={[styles.buttonArea, { flex: 1, alignItems: 'center' }]}>
+                                <TouchableOpacity style={[styles.buttonLight, {width: 100}]} onPress={() => navigation.navigate('Finanças')}>
+                                    <Text style={styles.buttonText}>Finanças</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={[styles.buttonArea, { flex: 1, alignItems: 'center' }]}>
+                                <TouchableOpacity style={[styles.buttonLight, {width: 100}]} onPress={() => setVisibleSuccess(false)}>
+                                    <Text style={styles.buttonText}>Fechar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Success>
+                    <Error setVisibleError={setVisibleErro} visibleError={visibleErro} >
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.modalText}>Erro ao registrar</Text>
+                        </View>
+                        <View style={[styles.buttonArea, { flex: 1 }]}>
+                            <TouchableOpacity style={styles.buttonLight} onPress={() => setVisibleErro(false)}>
+                                <Text style={styles.buttonText}>Fechar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Error>
+                    <Details setVisible={setVisible} visible={visible} >
+                        <View style={{ flex: 1, }}>
+                            <View style={{ flex: 3 }}>
+                                <View style={{ padding: 15 }}>
+                                    <Text style={styles.simpleText}>
+                                        <Text style={{ fontWeight: 'bold', color: "#0af" }}>Tipo: </Text>
+                                        {`${tipo && FirstLetterUpperCase(tipo)}`}
+                                    </Text>
+                                    <Text style={styles.simpleText}>
+                                        <Text style={{ fontWeight: 'bold', color: "#0af" }}>Categoria: </Text>
+                                        {`${categoria && FirstLetterUpperCase(categoria)}`}
+                                    </Text>
+                                    <Text style={styles.simpleText}>
+                                        <Text style={{ fontWeight: 'bold', color: "#0af" }}>Descrição: </Text>
+                                        {`${desc && FirstLetterUpperCase(desc)}`}
+                                    </Text>
+                                    <Text style={styles.simpleText}>
+                                        <Text style={{ fontWeight: 'bold', color: "#0af" }}>Valor: </Text>
+                                        {`R$${valor && moneyFormat(valor)}`}
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={{ flex: 1, marginVertical: 10 }}>
+                                <Text style={{ color: "#0af", textAlign: 'center', marginTop: 10, fontWeight: 'bold', fontSize: 20 }}>Confirmar registro?</Text>
+                            </View>
+
+                            <View style={[styles.buttonArea, { flex: 1, marginBottom: 20, marginTop: 5, flexDirection: 'row', justifyContent: 'space-around' }]}>
+                                <TouchableOpacity style={[styles.buttonLight, { borderWidth: 0 }]} onPress={() => setVisible(false)}>
+                                    <Text style={[styles.buttonText, { color: '#ff0303aa' }]}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.buttonLight} onPress={() => [setVisible(false), handleAdd(false)]}>
+                                    <Text style={[styles.buttonText, { color: '#0ff' }]}>Confirmar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Details>
                 </View>
             </TouchableWithoutFeedback>
 

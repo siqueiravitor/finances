@@ -28,19 +28,25 @@ const chartConfig = {
 export function LineGraph({ dados }) {
     const [valor, setValor] = useState([0]);
 
+    useEffect(async ()=>{
+        loadData()
+    }, [dados])
+
     useEffect(async () => {
-        async function loadData() {
-            setValor([])
-            dados.forEach(async (item, idx) => {
-                let newValue = dados[idx].valor;
-                if (dados[idx].tipo === 'despesa') {
-                    newValue = -newValue;
-                }
-                setValor(old => [...old, newValue])
-            })
-        }
         await loadData()
     }, [])
+
+    async function loadData() {
+        setValor([])
+        dados.forEach(async (item, idx) => {
+            let newValue = dados[idx].valor;
+            if (dados[idx].tipo === 'despesa') {
+                newValue = -newValue;
+            }
+            setValor(old => [...old, newValue])
+            
+        })
+    }
 
     const data = {
         labels: valor,
@@ -66,20 +72,25 @@ export function LineGraph({ dados }) {
 }
 export function BarGraph({ dados }) {
     const [valor, setValor] = useState([0]);
+    
+    useEffect(async ()=>{
+        loadData()
+    }, [dados])
 
     useEffect(async () => {
-        async function loadData() {
-            setValor([])
-            dados.forEach(async (item, idx) => {
-                let newValue = dados[idx].valor;
-                if (dados[idx].tipo === 'despesa') {
-                    newValue = -newValue;
-                }
-                setValor(old => [...old, newValue])
-            })
-        }
         await loadData()
     }, [])
+
+    async function loadData() {
+        setValor([])
+        dados.forEach(async (item, idx) => {
+            let newValue = dados[idx].valor;
+            if (dados[idx].tipo === 'despesa') {
+                newValue = -newValue;
+            }
+            setValor(old => [...old, newValue])
+        })
+    }
 
     const data = {
         labels: valor,
@@ -111,31 +122,96 @@ export function PieGraph({ dados }) {
             },
         ]
     );
+    const [valorFiltrado, setValorFiltrado] = useState(
+        [
+            {
+                valor: 0,
+                legendFontColor: 'cyan',
+                legendFontSize: 15
+            },
+        ]
+    );
+
+    useEffect(async ()=>{
+        loadData()
+        // .then(async ()=>{
+        //     await setData()
+        // })
+    }, [dados])
 
     useEffect(async () => {
-        async function loadData() {
-            setValor([])
-            dados.forEach(async (item, idx) => {
-                let valor = dados[idx].valor;
-                let cor, data;
+        loadData()
+        // .then(async ()=>{
+        //     await setData()
+        // })
+    }, [])
 
-                if (dados[idx].tipo === 'despesa') {
-                    cor = `rgb(255,${(Math.random() * 150).toFixed()},${(Math.random() * 150).toFixed()})`;
-                } else if (dados[idx].tipo === 'receita') {
-                    cor = `rgb(0,${(Math.random() * 255).toFixed()},${(Math.random() * 255).toFixed()})`;
-                }
-                data = {
-                    name: dados[idx].categoria,
-                    valor: valor,
-                    color: cor,
-                    legendFontColor: cor,
+    async function loadData() {
+        setValor([])
+        dados.forEach(async (item, idx) => {
+            let valor = dados[idx].valor;
+            let cor, data;
+
+            if (dados[idx].tipo === 'despesa') {
+                cor = `rgb(255,${(Math.random() * 150).toFixed()},${(Math.random() * 150).toFixed()})`;
+            } else if (dados[idx].tipo === 'receita') {
+                cor = `rgb(0,${(Math.random() * 255).toFixed()},${(Math.random() * 255).toFixed()})`;
+            }
+            data = {
+                name: dados[idx].categoria,
+                valor: valor,
+                color: cor,
+                legendFontColor: cor,
+                legendFontSize: 15
+            }
+            setValor(old => [...old, data])
+        })
+    }
+
+    async function setData(){
+        let alimentacao, 
+            mercado, 
+            conta, 
+            lazer,
+            salario, 
+            outro;
+        let alimentacaoValor = 0, 
+            mercadoValor = 0, 
+            contaValor = 0, 
+            lazerValor = 0, 
+            salarioValor = 0, 
+            outroValor = 0;
+
+        valor.forEach((item, index)=> {
+            // console.log(item)
+            
+            if(item['name'] === 'mercado'){
+                mercadoValor = parseFloat(mercadoValor) + parseFloat(item['valor'])
+
+                mercado = {
+                    name: item['name'],
+                    valor: mercadoValor,
+                    color: '#0af',
+                    legendFontColor: '#0af',
                     legendFontSize: 15
                 }
-                setValor(old => [...old, data])
-            })
-        }
-        await loadData()
-    }, [])
+            }
+            if(item['name'] === 'salario'){
+                salarioValor = parseFloat(salarioValor) + parseFloat(item['valor'])
+
+                salario = {
+                    name: item['name'],
+                    valor: salarioValor,
+                    color: '#0f0',
+                    legendFontColor: '#0f0',
+                    legendFontSize: 15
+                }
+            }
+            console.log([salario, mercado])
+        })
+        setValor([salario, mercado])
+    }
+    
 
     // useEffect(async () => {
     //     async function loadData() {

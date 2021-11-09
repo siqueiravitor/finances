@@ -10,6 +10,10 @@ export function moneyFormat(value){
     return value;
 }
 
+export async function FirstLetterUpperCase(text){
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export function getData(data){
     let dia = (data.getDate() < 10) ? '0' + data.getDate() : data.getDate();
     let mes = (data.getMonth() < 9) ? '0' + (data.getMonth() + 1) : (data.getMonth() + 1);

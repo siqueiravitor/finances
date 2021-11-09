@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { View, Text, Dimensions, TouchableOpacity, FlatList, Alert } from 'react-native'
+import { View, Text, Dimensions, TouchableOpacity, FlatList, Alert, ActivityIndicator } from 'react-native'
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import firebase from '../../services/connFirebase'
 import { styles } from '../../include/styles'
 import { AuthContext } from '../../contents/auth';
 import DatePicker from '../../components/DatePicker';
-import { getData, getDataBr, getDataHojeSeparador, moneyFormat } from '../../include/config/funcoes';
+import { FirstLetterUpperCase, getData, getDataBr, getDataHojeSeparador, moneyFormat } from '../../include/config/funcoes';
 import HistoricoList from '../../components/HistoricoList';
 import { BarGraph, LineGraph, PieGraph } from '../../components/Charts';
 import { HistoricoPicker } from '../../components/Picker';
 import Loading from '../../include/loading';
+import { Alerta, Details, Success } from '../../components/Modals';
 
 export default function Finance() {
     const windowWidth = Dimensions.get('window').width;
@@ -22,24 +23,31 @@ export default function Finance() {
     const [historico, setHistorico] = useState([])
     const [loading, setLoading] = useState(false);
 
+    const [data, setData] = useState({})
+    const [visible, setVisible] = useState(false);
+    const [visibleErro, setVisibleErro] = useState(false);
+    const [visibleAlert, setVisibleAlert] = useState(false);
+    const [visibleSuccess, setVisibleSuccess] = useState(false);
+
     const { user } = useContext(AuthContext);
     const uid = user && user.uid;
 
     const [newDate, setNewDate] = useState(new Date());
     const [show, setShow] = useState(false);
 
-    useEffect(async () => {
+    useEffect(() => {
         setHistorico(list)
     }, [list])
 
 
-    useEffect(async () => {
+    useEffect(() => {
         let calc = parseFloat(saldoProfit) - parseFloat(saldoExpense);
         setSaldoDia(calc)
     }, [saldoProfit, saldoExpense])
 
-    useEffect(async () => {
+    useEffect(() => {
         async function loadList() {
+            setLoading(true)
             await firebase.database().ref('usuarios').child(uid).on('value', (snapshot) => {
                 setSaldo(snapshot.val().saldo);
             })
@@ -75,6 +83,7 @@ export default function Finance() {
                             }
                         })
                     })
+                    setLoading(false)
                 })
         }
         loadList()
@@ -91,19 +100,18 @@ export default function Finance() {
         setNewDate(date);
     }
     function typeChanger(type) {
-        if(historico === []){
-            console.log('vazio')
+        if (historico === []) {
             return;
         }
 
         setLoading(true)
         if (type === 1) {
             setType('lineGraph')
-        } else if (type === 2){
+        } else if (type === 2) {
             setType('barGraph')
-        } else if (type === 3){
+        } else if (type === 3) {
             setType('pieGraph')
-        }  else {
+        } else {
             setType('')
         }
         setTimeout(() => {
@@ -111,7 +119,23 @@ export default function Finance() {
         }, 1200)
     }
 
-    function handleDelete(data) {
+    async function handleDetails(data) {
+        // setMsg(`Detalhes da ${data.tipo}` + `Valor: R$ ${(data.valor).toFixed(2)} \n` + `Categoria: ${data.categoria}`)
+        await data
+        setData(data)
+        setVisible(true)
+        // console.log(data ? data : 'sem dados')
+        // Alert.alert(
+        //     `Mais detalhes sobre a ${data.tipo}`,
+        //     `${data.description}`
+        // )
+    }
+
+    async function handleDelete(data) {
+        await data
+        setData(data)
+        setVisibleAlert(true)
+        return
         Alert.alert(
             `Detalhes da ${data.tipo}`,
             `Valor: R$ ${(data.valor).toFixed(2)} \n` + `Categoria: ${data.categoria}`,
@@ -157,6 +181,7 @@ export default function Finance() {
                     .then(() => {
                         console.log('Saldo Atualizado com sucesso')
                         saldoAtual = '';
+                        setVisibleSuccess(true)
                     })
                     .catch((e) => { console.log(e) })
             })
@@ -238,11 +263,15 @@ export default function Finance() {
                                     data={historico}
                                     keyExtractor={item => item.key}
                                     renderItem={({ item }) => (
-                                        <HistoricoList data={item} deleteItem={handleDelete} />
+                                        <HistoricoList data={item}
+                                            handleLeft={handleDetails}
+                                            handleRight={handleDelete}
+                                        />
                                     )}
-                                    ListEmptyComponent={()=> (
+                                    ListEmptyComponent={() => (
                                         <View>
-                                            <Text style={{ color :"#f1f5f7", textAlign: 'center', fontSize: 30}}>Sem dados</Text>
+                                            <Text style={{ color :"#f1f5f7", textAlign: 'center', fontSize: 30}}>Sem dados nesta data</Text>
+                                            {/* <ActivityIndicator color={'#0ff'} size={'large'} /> */}
                                         </View>
                                     )}
                                 />
@@ -250,23 +279,23 @@ export default function Finance() {
 
                         ) :
                         type === 'lineGraph' ?
-                        (
-                            <View style={{ flex: 1, alignItems: 'center' }}>
-                                <LineGraph dados={historico} />
-                            </View>
-                        ) :
-                        type === 'barGraph' ?
-                        (
-                            <View style={{ flex: 1, alignItems: 'center' }}>
-                                <BarGraph dados={historico} />
-                            </View>
-                        ) :
-                        type === 'pieGraph' &&
-                        (
-                            <View style={{ flex: 1, alignItems: 'center' }}>
-                                <PieGraph dados={historico} />
-                            </View>
-                        )
+                            (
+                                <View style={{ flex: 1, alignItems: 'center' }}>
+                                    <LineGraph dados={historico} loading={loading} setLoading={setLoading} />
+                                </View>
+                            ) :
+                            type === 'barGraph' ?
+                                (
+                                    <View style={{ flex: 1, alignItems: 'center' }}>
+                                        <BarGraph dados={historico} />
+                                    </View>
+                                ) :
+                                type === 'pieGraph' &&
+                                (
+                                    <View style={{ flex: 1, alignItems: 'center' }}>
+                                        <PieGraph dados={historico} />
+                                    </View>
+                                )
             }
 
 
@@ -277,6 +306,67 @@ export default function Finance() {
                     onChange={onChange}
                 />
             )}
+
+            <Details setVisible={setVisible} visible={visible} >
+                <View style={{}}>
+                    <Text style={{ color: "#0af", textAlign: 'center', marginTop: 10, fontWeight: 'bold', fontSize: 20 }}>Detalhes do registro</Text>
+                </View>
+                <View style={{ flex: 1, }}>
+                    <View style={{ flex: 3 }}>
+                        <View style={{ padding: 15 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <Text style={styles.simpleText}>
+                                    <Text style={{ fontWeight: 'bold', color: "#0af" }}>{data !== {} ? data.tipo : ''} de </Text>
+                                    R${data !== {} && moneyFormat(data.valor)}
+                                </Text>
+                            </View>
+                            <Text style={[styles.simpleText]}>
+                                <Text style={{ fontWeight: 'bold', color: "#0af" }}>Categoria: </Text>
+                                {data !== {} && data.categoria}
+                            </Text>
+                            <Text style={styles.simpleText}>
+                                <Text style={{ fontWeight: 'bold', color: "#0af" }}>Descrição: </Text>
+                                {data !== {} && data.description}
+                            </Text>
+
+                        </View>
+                    </View>
+
+                    <View style={[styles.buttonArea, { marginBottom: 20, marginTop: 5, flexDirection: 'row', justifyContent: 'space-around' }]}>
+                        {/* <TouchableOpacity style={[styles.buttonLight, { borderWidth: 0 }]} onPress={() => setVisible(false)}>
+                            <Text style={[styles.buttonText, { color: '#ff0303aa' }]}>Cancelar</Text>
+                        </TouchableOpacity> */}
+                        <TouchableOpacity style={styles.buttonLight} onPress={() => setVisible(false)}>
+                            <Text style={[styles.buttonText, { color: '#0ff' }]}>Fechar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Details>
+            <Alerta setVisible={setVisibleAlert} visible={visibleAlert}>
+                <View style={{ flex: 1, paddingTop: 20 }}>
+                    <Text style={{ fontWeight: 'bold', color: "#0af", fontSize: 20, textAlign: 'center' }}>Deseja excluir esse registro?</Text>
+                </View>
+                <View style={[styles.buttonArea, { marginBottom: 20, marginTop: 5, flexDirection: 'row', justifyContent: 'space-around' }]}>
+                    <TouchableOpacity style={[styles.buttonLight, { borderWidth: 0 }]} onPress={() => setVisible(false)}>
+                        <Text style={[styles.buttonText, { color: '#ff0303aa' }]}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.buttonLight} onPress={() => [setVisibleAlert(false), handleDeleteSuccess(data)]}>
+                        <Text style={[styles.buttonText, { color: '#0ff' }]}>Confirmar</Text>
+                    </TouchableOpacity>
+                </View>
+            </Alerta>
+            <Success setVisibleSuccess={setVisibleSuccess} visibleSuccess={visibleSuccess} >
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.modalText}>Registro excluído com sucesso!</Text>
+                </View>
+                <View style={{ flexDirection: 'row', paddingBottom: 30, }}>
+                    <View style={[styles.buttonArea, { flex: 1, alignItems: 'center' }]}>
+                        <TouchableOpacity style={[styles.buttonLight, { width: 100 }]} onPress={() => setVisibleSuccess(false)}>
+                            <Text style={styles.buttonText}>Fechar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Success>
         </View>
     )
 }

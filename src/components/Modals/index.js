@@ -1,9 +1,50 @@
 import React from 'react'
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 import LottieView from 'lottie-react-native';
 import ModalModel from '../ModalModel';
 
-export function Success({ children, setVisibleSuccess, visibleSuccess}) {
+export function Alerta({ children, setVisible, visible }) {
+    return (
+        <ModalModel
+            visible={visible}
+            onBackDropPress={() => setVisible(false)}
+            style={{ flex: 1, justifyContent:"center", paddingHorizontal: 30 }}
+        >
+            <View style={[{
+                backgroundColor: '#061a23',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "#0ff",
+                minHeight: 140,
+                overflow: 'hidden',
+            }]}>
+                {children}
+            </View>
+        </ModalModel>
+    )
+}
+export function Details({ children, setVisible, visible }) {
+    return (
+        <ModalModel
+            visible={visible}
+            onBackDropPress={() => setVisible(false)}
+            style={{ padding: 30 }}
+        >
+            <View style={[{
+                backgroundColor: '#061a23',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "#0ff",
+                minHeight: 225,
+                overflow: 'hidden',
+            }]}>
+                {children}
+            </View>
+        </ModalModel>
+    )
+}
+
+export function Success({ children, setVisibleSuccess, visibleSuccess }) {
     return (
         <ModalModel
             visible={visibleSuccess}
@@ -11,12 +52,12 @@ export function Success({ children, setVisibleSuccess, visibleSuccess}) {
             style={{ padding: 30 }}
         >
             <View style={[{
-                backgroundColor: '#f1f5f7',
+                backgroundColor: '#061a23',
                 borderRadius: 12,
                 minHeight: 290,
                 overflow: 'hidden',
             }]}>
-                <View style={{ alignItems: 'center'}}>
+                <View style={{ alignItems: 'center', flex: 3 }}>
                     <LottieView
                         loop={false}
                         autoPlay
@@ -40,12 +81,12 @@ export function Error({ children, visibleError, setVisibleError }) {
             style={{ padding: 30 }}
         >
             <View style={[{
-                backgroundColor: '#f1f5f7',
+                backgroundColor: '#061a23',
                 borderRadius: 12,
                 minHeight: 290,
                 overflow: 'hidden',
             }]}>
-                <View style={{ alignItems: 'center'}}>
+                <View style={{ alignItems: 'center', flex: 3 }}>
                     <LottieView
                         loop={false}
                         autoPlay
@@ -74,7 +115,7 @@ export function Warning({ children, visibleWarning, setVisibleWarning }) {
                 minHeight: 290,
                 overflow: 'hidden',
             }]}>
-                <View style={{ alignItems: 'center'}}>
+                <View style={{ alignItems: 'center' }}>
                     <LottieView
                         loop={false}
                         autoPlay
@@ -90,7 +131,7 @@ export function Warning({ children, visibleWarning, setVisibleWarning }) {
         </ModalModel>
     )
 }
-export function PasswordReset({ children, setVisibleSuccess, visibleSuccess}) {
+export function PasswordReset({ children, setVisibleSuccess, visibleSuccess }) {
     return (
         <ModalModel
             visible={visibleSuccess}
@@ -103,7 +144,7 @@ export function PasswordReset({ children, setVisibleSuccess, visibleSuccess}) {
                 minHeight: 290,
                 overflow: 'hidden',
             }]}>
-                <View style={{ alignItems: 'center'}}>
+                <View style={{ alignItems: 'center' }}>
                     <LottieView
                         loop={false}
                         autoPlay
